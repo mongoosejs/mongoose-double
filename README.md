@@ -3,7 +3,7 @@
 
 Provides Double support for [Mongoose](http://mongoosejs.com).
 
-[![Build Status](https://secure.travis-ci.org/aheckmann/mongoose-long.png)](http://travis-ci.org/aheckmann/mongoose-double)
+[![Build Status](https://secure.travis-ci.org/aheckmann/mongoose-double.png)](http://travis-ci.org/aheckmann/mongoose-double)
 
 Example:
 

@@ -90,6 +90,19 @@ describe('Double', function(){
           done();
         });
       })
+
+      it('casts within subdocs', function(done){
+        var v = '2000000.00';
+        var nested = new Schema({ double: Double });
+        var schema = new Schema({ docs: [nested] });
+        var M = db.model('subdocs', schema);
+        var m = new M({ docs: [{ double: v }] });
+        assert.ok(m.docs[0].double instanceof mongoose.Types.Double);
+        m.save(function (err) {
+          assert.ifError(err);
+          done();
+        });
+      })
     })
 
     it('can be saved', function(done){

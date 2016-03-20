@@ -139,6 +139,19 @@ describe('Double', function(){
       })
     })
 
+    it('can be default', function(done){
+      var a = new Number(2.22);
+      var b = new Number(1.11);
+      var c = a + b;
+      var s = new Schema({ double: { type: Double, default: b }});
+      var M = db.model('default', s);
+      var m = new M;
+      m.save(function (err) {
+        assert.equal(c.valueOf(), m.double.valueOf() + a);
+        done();
+      })
+    })
+
     it('can be required', function(done){
       var s = new Schema({ double: { type: Double, required: true }});
       var M = db.model('required', s);

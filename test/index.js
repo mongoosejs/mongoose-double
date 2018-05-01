@@ -1,186 +1,81 @@
-var assert = require('assert')
-var DoubleModule = require('../')
-var mongoose = require('mongoose')
-var Schema = mongoose.Schema;
-var Double;
+'use strict';
 
-describe('Double', function(){
-  before(function(){
-    Double = DoubleModule(mongoose);
-  })
+const Double = require('../');
+const assert = require('assert');
+const co = require('co');
+const mongoose = require('mongoose');
 
-  it('is a function', function(){
-    assert.equal('function', typeof Double);
-  })
+describe('Double', function() {
+  let Model;
 
-  it('extends mongoose.Schema.Types', function(){
-    assert.ok(Schema.Types.Double);
-    assert.equal(Double, Schema.Types.Double);
-  })
+  before(function() {
+    mongoose.connect('mongodb://localhost:27017/doubletest');
+    const schema = new mongoose.Schema({ double: Double, name: 'string' });
+    Model = mongoose.model('Test', schema);
+  });
 
-  it('extends mongoose.Types', function(){
-    assert.ok(mongoose.Types.Double);
-    assert.equal(mongoose.mongo.Double, mongoose.Types.Double);
-  })
+  after(function() {
+    return mongoose.disconnect();
+  });
 
-  it('can be used in schemas', function(){
-    var s = new Schema({ double: Double });
-    var double = s.path('double')
-    assert.ok(double instanceof mongoose.SchemaType);
-    assert.equal('function', typeof double.get);
+  describe('casts', function() {
+    it('numbers', function() {
+      let doc = new Model({ double: 20000000.1 });
+      assert.ok(doc.double instanceof mongoose.Types.Double);
+      assert.equal(doc.double.valueOf(), 20000000.1);
+      assert.equal(doc.double, 20000000.1);
 
-    var s = new Schema({ double: 'double' });
-    var double = s.path('double')
-    assert.ok(double instanceof mongoose.SchemaType);
-    assert.equal('function', typeof double.get);
-  })
+      const v = new Number(20000000.0);
+      doc = new Model({ double: v });
+      assert.ok(doc.double instanceof mongoose.Types.Double);
+      assert.equal(+doc.double.value, +v);
+    });
 
-  describe('integration', function(){
-    var db, S, schema, id;
-
-    before(function(done){
-      db = mongoose.createConnection('localhost', 'mongoose_double')
-      db.once('open', function () {
-        schema = new Schema({ double: Double, name: 'string' });
-        S = db.model('Double', schema);
-        done();
-      });
+    it('null', function() {
+      assert.strictEqual(new Model({ double: null }).double, null);
     })
 
-    describe('casts', function(){
-      it('numbers', function(){
-        var v = 20000000.1;
-        var s = new S({ double: v });
-        assert.ok(s.double instanceof mongoose.Types.Double);
-        assert.equal(v, s.double.valueOf());
-        assert.equal(v, s.double);
+    it('mongoose.Types.Double', function() {
+      const doc = new Model({ double: new mongoose.Types.Double('90') });
+      assert.ok(doc.double instanceof mongoose.Types.Double);
+      assert.equal(doc.double, 90);
+    });
+  });
 
-        v = new Number(20000000.0);
-        s = new S({ double: v });
-        assert.ok(s.double instanceof mongoose.Types.Double);
-        assert.equal(+v, +s.double.value);
-      })
+  it('saves as correct type', function() {
+    return co(function*() {
+      const schema = new mongoose.Schema({ val: Double });
+      const numSchema = new mongoose.Schema({ val: Number });
+      const Model = mongoose.model('DoubleTest1', schema, 'doubletest1');
+      const NumModel = mongoose.model('DoubleTest2', numSchema, 'doubletest1');
 
-      it('strings', function(){
-        var v = '2000000.00';
-        var s = new S({ double: v});
-        assert.ok(s.double instanceof mongoose.Types.Double);
-        assert.equal(v, s.double.valueOf().toString());
-      })
+      const doc = new Model({ val: 5 });
+      ++doc.val;
+      yield doc.save();
 
-      it('null', function(){
-        var s = new S({ double: null });
-        assert.equal(null, s.double);
-      })
+      assert.ok(yield Model.findOne({ val: { $type: 1 } }));
+      assert.ok(yield Model.findOne({ val: 6 }));
+      assert.ok(yield NumModel.findOne({ val: 6 }));
+    });
+  });
 
-      it('mongo.Double', function(){
-        var s = new S({ double: new mongoose.Types.Double("90") });
-        assert.ok(s.double instanceof mongoose.Types.Double);
-        assert.equal(90, s.double);
-      })
+  it('works in update', function() {
+    return co(function*() {
+      const doc = yield Model.create({ double: 1 });
 
-      it('non-castables produce _saveErrors', function(done){
-        var schema = new Schema({ double: Double }, { strict: 'throw' });
-        var M = db.model('throws', schema);
-        var m = new M({ double: [] });
-        m.save(function (err) {
-          assert.ok(err);
-          assert.equal('Double', err.type);
-          assert.equal('CastError', err.name);
-          done();
-        });
-      })
+      yield Model.updateOne({}, { $set: { double: 2 } });
 
-      it('casts within subdocs', function(done){
-        var v = '2000000.00';
-        var nested = new Schema({ double: Double });
-        var schema = new Schema({ docs: [nested] });
-        var M = db.model('subdocs', schema);
-        var m = new M({ docs: [{ double: v }] });
-        assert.ok(m.docs[0].double instanceof mongoose.Types.Double);
-        m.save(function (err) {
-          assert.ifError(err);
-          done();
-        });
-      })
-    })
+      assert.ok(yield Model.findOne({ double: { $type: 1 } }));
+    });
+  });
 
-    it('can be saved', function(done){
-      var s = new S({ double: 20 });
-      id = s.id;
-      s.save(function (err) {
-        assert.ifError(err);
-        done();
-      })
-    })
-
-    it('is queryable', function(done){
-      S.findById(id, function (err, doc) {
-        assert.ifError(err);
-        assert.ok(doc.double instanceof mongoose.Types.Double);
-        assert.equal(20, +doc.double);
-        done();
-      });
-    })
-
-    it('can be updated', function(done){
-      S.findById(id, function (err, doc) {
-        assert.ifError(err);
-        doc.double += 10;
-        //doc.double.value += 10;
-        doc.save(function (err) {
-          assert.ifError(err);
-          S.findById(id, function (err, doc) {
-            assert.ifError(err);
-            assert.equal(30, doc.double.valueOf());
-            done();
-          });
-        })
-      })
-    })
-
-    it('can be default', function(done){
-      var a = new Number(2.22);
-      var b = new Number(1.11);
-      var c = a + b;
-      var s = new Schema({ double: { type: Double, default: b }});
-      var M = db.model('default', s);
-      var m = new M;
-      m.save(function (err) {
-        assert.equal(c.valueOf(), m.double.valueOf() + a);
-        done();
-      })
-    })
-
-    it('can be required', function(done){
-      var s = new Schema({ double: { type: Double, required: true }});
-      var M = db.model('required', s);
-      var m = new M;
-      m.save(function (err) {
-        assert.ok(err);
-        m.double = 10;
-        m.validate(function (err) {
-          assert.ifError(err);
-          done();
-        })
-      })
-    })
-
-    it('works with update', function(done){
-      S.create({ double: 99999 }, function (err, s) {
-        assert.ifError(err);
-        S.update({ double: s.double, _id: s._id }, { name: 'changed' }, { upsert: true }, function (err) {
-          assert.ifError(err);
-
-          S.findById(s._id, function (err, doc) {
-            assert.ifError(err);
-            assert.equal(99999, doc.double.value);
-            assert.equal('changed', doc.name);
-            done();
-          })
-        });
-      });
-
-    })
-  })
-})
+  it('can be default', function() {
+    return co(function*() {
+      const b = new Number(1.11);
+      const s = new mongoose.Schema({ double: { type: Double, default: b }});
+      const M = mongoose.model('DefaultTest', s);
+      const doc = yield M.create({});
+      assert.equal(doc.double.valueOf(), 1.11);
+    });
+  });
+});

@@ -4,6 +4,7 @@
   "description": "Double support for Mongoose",
   "main": "index.js",
   "scripts": {
+    "docs": "acquit-markdown -r acquit-ignore -p './test/example.js' -h './HEADER.md' > README.md",
     "test": "mocha test/*.js"
   },
   "repository": {
@@ -21,6 +22,9 @@
   "author": "Valeri Karpov <val@karpov.io>",
   "license": "MIT",
   "devDependencies": {
+    "acquit": "0.6.1",
+    "acquit-ignore": "0.0.3",
+    "acquit-markdown": "0.0.10",
     "co": "4.6.0",
     "mocha": "*",
     "mongoose": "5.x"

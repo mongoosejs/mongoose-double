@@ -1,26 +1,19 @@
-# mongoose-double
+'use strict';
 
-[Mongoose](http://mongoosejs.com/) type for storing MongoDB doubles [(bson type 1)](http://bsonspec.org/spec.html)
+const Double = require('../');
+const assert = require('assert');
+const mongoose = require('mongoose');
 
-[![Build Status](https://secure.travis-ci.org/mongoosejs/mongoose-double.png)](http://travis-ci.org/mongoosejs/mongoose-double)
+describe('Examples', function() {
+  before(function() {
+    mongoose.connect('mongodb://localhost:27017/doubletest');
+  });
 
-# Importing
+  after(function() {
+    return mongoose.disconnect();
+  });
 
-```javascript
-// Using Node.js `require()`
-const Double = require('mongoose-double');
-
-// Using ES6 imports
-import Double from 'mongoose-double';
-```
-
-
-# Examples
-
-## It ensures your numbers are always stored as doubles in MongoDB
-
-```javascript
-
+  it('ensures your numbers are always stored as doubles in MongoDB', function() {
     const schema = new mongoose.Schema({ val: Double });
     const Model = mongoose.model('Double', schema);
 
@@ -48,20 +41,15 @@ import Double from 'mongoose-double';
       then(function(doc) {
         assert.ok(!doc);
       });
-  
-```
+  });
 
-## It bypasses the MongoDB driver's integer coercion
-
-
-This plugin is useful because the [MongoDB Node.js driver](https://www.npmjs.com/package/mongodb)
-will store the JavaScript number `5.01` as a double, but it will store `5`
-as an integer. There is currently no option to opt out of this behavior
-in the MongoDB driver.
-
-
-```javascript
-
+  /**
+   * This plugin is useful because the [MongoDB Node.js driver](https://www.npmjs.com/package/mongodb)
+   * will store the JavaScript number `5.01` as a double, but it will store `5`
+   * as an integer. There is currently no option to opt out of this behavior
+   * in the MongoDB driver.
+   */
+  it('bypasses the MongoDB driver\'s integer coercion', function() {
     const schema = new mongoose.Schema({ val: Number });
     const Model = mongoose.model('Number', schema);
 
@@ -80,5 +68,5 @@ in the MongoDB driver.
         assert.ok(doc);
         assert.equal(doc.val, 5);
       });
-  
-```
+  });
+});

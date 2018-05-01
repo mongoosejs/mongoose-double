@@ -1,3 +1,7 @@
+0.1.0 / 2018-05-01
+==================
+
+ * feat: add mongoose 5 support, re: Automattic/mongoose#5813
 
 0.0.1 / 2012-11-16
 ==================

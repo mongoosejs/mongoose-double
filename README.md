@@ -8,10 +8,10 @@
 
 ```javascript
 // Using Node.js `require()`
-const Double = require('mongoose-double');
+const Double = require('@mongoosejs/double');
 
 // Using ES6 imports
-import Double from 'mongoose-double';
+import Double from '@mongoosejs/double';
 ```
 
 

@@ -1,5 +1,5 @@
 {
-  "name": "mongoose-double",
+  "name": "@mongoosejs/double",
   "version": "0.1.0",
   "description": "Double support for Mongoose",
   "main": "index.js",

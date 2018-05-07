@@ -20,35 +20,33 @@ import Double from '@mongoosejs/double';
 ## It ensures your numbers are always stored as doubles in MongoDB
 
 ```javascript
+const schema = new mongoose.Schema({ val: Double });
+const Model = mongoose.model('Double', schema);
 
-    const schema = new mongoose.Schema({ val: Double });
-    const Model = mongoose.model('Double', schema);
+const doc = new Model({ val: 41 });
 
-    const doc = new Model({ val: 41 });
+// `doc.val` will be an object, not a number, but you can still use it as
+// a number
+assert.ok(doc.val instanceof mongoose.Types.Double);
+assert.ok(doc.val instanceof Number);
+assert.equal(typeof doc.val, 'object');
 
-    // `doc.val` will be an object, not a number, but you can still use it as
-    // a number
-    assert.ok(doc.val instanceof mongoose.Types.Double);
-    assert.ok(doc.val instanceof Number);
-    assert.equal(typeof doc.val, 'object');
+++doc.val;
 
-    ++doc.val;
-
-    return doc.save().
-      then(function() {
-        return Model.findOne({ val: { $type: 'double' } });
-      }).
-      then(function(doc) {
-        assert.ok(doc);
-        assert.equal(doc.val, 42);
-      }).
-      then(function() {
-        return Model.findOne({ val: { $type: 'int' } });
-      }).
-      then(function(doc) {
-        assert.ok(!doc);
-      });
-  
+return doc.save().
+  then(function() {
+    return Model.findOne({ val: { $type: 'double' } });
+  }).
+  then(function(doc) {
+    assert.ok(doc);
+    assert.equal(doc.val, 42);
+  }).
+  then(function() {
+    return Model.findOne({ val: { $type: 'int' } });
+  }).
+  then(function(doc) {
+    assert.ok(!doc);
+  });
 ```
 
 ## It bypasses the MongoDB driver's integer coercion
@@ -61,24 +59,22 @@ in the MongoDB driver.
 
 
 ```javascript
+const schema = new mongoose.Schema({ val: Number });
+const Model = mongoose.model('Number', schema);
 
-    const schema = new mongoose.Schema({ val: Number });
-    const Model = mongoose.model('Number', schema);
-
-    return Model.create([{ val: 5.01 }, { val: 5 }]).
-      then(function() {
-        return Model.findOne({ val: { $type: 'double' } });
-      }).
-      then(function(doc) {
-        assert.ok(doc);
-        assert.equal(doc.val, 5.01);
-      }).
-      then(function() {
-        return Model.findOne({ val: { $type: 'int' } });
-      }).
-      then(function(doc) {
-        assert.ok(doc);
-        assert.equal(doc.val, 5);
-      });
-  
+return Model.create([{ val: 5.01 }, { val: 5 }]).
+  then(function() {
+    return Model.findOne({ val: { $type: 'double' } });
+  }).
+  then(function(doc) {
+    assert.ok(doc);
+    assert.equal(doc.val, 5.01);
+  }).
+  then(function() {
+    return Model.findOne({ val: { $type: 'int' } });
+  }).
+  then(function(doc) {
+    assert.ok(doc);
+    assert.equal(doc.val, 5);
+  });
 ```

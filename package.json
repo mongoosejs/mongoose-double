@@ -5,7 +5,7 @@
   "description": "Double support for Mongoose",
   "main": "index.js",
   "scripts": {
-    "docs": "acquit-markdown -r acquit-ignore -p './test/example.js' -h './HEADER.md' > README.md",
+    "docs": "acquit-markdown -r acquit-ignore -p './test/example.js' > examples.md",
     "test": "mocha test/*.js"
   },
   "repository": {

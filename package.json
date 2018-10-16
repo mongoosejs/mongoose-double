@@ -2,6 +2,7 @@
   "name": "@mongoosejs/double",
   "private": false,
   "version": "0.1.1",
+  "homepage": "http://plugins.mongoosejs.io/plugins/double",
   "description": "Double support for Mongoose",
   "main": "index.js",
   "scripts": {

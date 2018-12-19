@@ -58,6 +58,27 @@ describe('Double', function() {
       assert.ok(yield NumModel.findOne({ val: 6 }));
     });
   });
+  
+  it("reset modified fields after save", function() {
+    return co(function*() {
+      const schema = new mongoose.Schema({ val: Double });
+      const numSchema = new mongoose.Schema({ val: Number });
+      const Model = mongoose.model("DoubleTest3", schema);
+      const NumModel = mongoose.model("DoubleTest4", numSchema);
+
+      const val = 5;
+      const doc = new Model({ val });
+      doc.set({ val });
+      yield doc.save();
+
+      const docNum = new NumModel({ val });
+      docNum.set({ val });
+      yield docNum.save();
+
+      assert.ok(doc.isModified("val"));
+      assert.ok(docNum.isModified("val"));
+    });
+  });
 
   it('works in update', function() {
     return co(function*() {

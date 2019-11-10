@@ -23,12 +23,15 @@
   ],
   "author": "Valeri Karpov <val@karpov.io>",
   "license": "MIT",
+  "peerDependencies": {
+    "mongoose": "^5.7.9"
+  },
   "devDependencies": {
     "acquit": "1.x",
     "acquit-ignore": "0.1.x",
     "acquit-markdown": "0.1.x",
     "co": "4.6.0",
     "mocha": "*",
-    "mongoose": "5.x"
+    "mongoose": "^5.7.9"
   }
 }

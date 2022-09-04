@@ -1,3 +1,7 @@
+0.3.0 / 2022-09-04
+==================
+ * feat: support Mongoose 6.x #13 [DiegofrApps](https://github.com/DiegofrApps)
+
 0.2.0 / 2019-11-10
 ==================
  * feat: add support for comparison query selectors `$gt`, `$lt`, etc. #8 [w33ble](https://github.com/w33ble)

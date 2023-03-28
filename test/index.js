@@ -59,6 +59,38 @@ describe('Double', function() {
     });
   });
 
+  describe('NaNs', () => {
+    it('saves explicit NaNs', function() {
+      return co(function*() {
+        const schema = new mongoose.Schema({ val: Double });
+        const Model = mongoose.model('DoubleTest3', schema, 'doubletest3');
+
+        const doc = new Model({ val: NaN });
+        ++doc.val;
+        yield doc.save();
+
+        assert.ok(yield Model.findOne({ val: { $type: 1 } }));
+        assert.ok(yield Model.findOne({ val: NaN }));
+      });
+    });
+
+    it('does not save implicit NaNs', function() {
+      return co(function*() {
+        const schema = new mongoose.Schema({ val: Double });
+        const Model = mongoose.model('DoubleTest4', schema, 'doubletest4');
+
+        const doc = new Model({ val: 'hi' });
+        ++doc.val;
+        return doc.save().then(() => {
+          throw new Error('This should not save')
+        }).catch(e => {
+          assert.ok(true)
+        })
+      });
+    });
+  })
+
+
   it('works in update', function() {
     return co(function*() {
       const doc = yield Model.create({ double: 1 });

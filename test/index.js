@@ -110,4 +110,49 @@ describe('Double', function() {
       assert.equal(doc.double.valueOf(), 1.11);
     });
   });
+
+  describe('comparisons', function() {
+    let ComparisonModel;
+
+    before(function() {
+      return co(function*() {
+        const schema = new mongoose.Schema({ val: Double });
+        ComparisonModel = mongoose.model('ComparisonTest', schema);
+        const doc = new ComparisonModel({ val: 5.01 });
+        yield doc.save();
+      });
+    });
+
+    it('$gt', function() {
+      return co(function*() {
+        assert.ok(yield ComparisonModel.findOne({ val: { $gt: 5 }}));
+        assert.ok(yield ComparisonModel.findOne({ val: { $gt: 5.0 }}));
+        assert.strictEqual(yield ComparisonModel.findOne({ val: { $gt: 5.01 }}), null);
+      });
+    });
+
+    it('$gte', function() {
+      return co(function*() {
+        assert.ok(yield ComparisonModel.findOne({ val: { $gte: 5 }}));
+        assert.ok(yield ComparisonModel.findOne({ val: { $gte: 5.0 }}));
+        assert.strictEqual(yield ComparisonModel.findOne({ val: { $gte: 5.02 }}), null);
+      });
+    });
+
+    it('$lt', function() {
+      return co(function*() {
+        assert.ok(yield ComparisonModel.findOne({ val: { $lt: 6 }}));
+        assert.ok(yield ComparisonModel.findOne({ val: { $lt: 5.02 }}));
+        assert.strictEqual(yield ComparisonModel.findOne({ val: { $lt: 5.01 }}), null);
+      });
+    });
+
+    it('$lte', function() {
+      return co(function*() {
+        assert.ok(yield ComparisonModel.findOne({ val: { $lte: 6 }}));
+        assert.ok(yield ComparisonModel.findOne({ val: { $lte: 5.01 }}));
+        assert.strictEqual(yield ComparisonModel.findOne({ val: { $lte: 5.0 }}), null);
+      });
+    });
+  });
 });

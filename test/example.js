@@ -4,14 +4,23 @@ const Double = require('../');
 const assert = require('assert');
 const mongoose = require('mongoose');
 
+if (process.env.D) {
+  mongoose.set('debug', true);
+}
+
 describe('Examples', function() {
   before(function() {
-    mongoose.connect('mongodb://localhost:27017/doubletest');
+    mongoose.connect('mongodb://localhost:27017/doubletest', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
   });
 
   after(function() {
     return mongoose.disconnect();
   });
+
+  beforeEach(() => mongoose.connection.dropDatabase());
 
   it('ensures your numbers are always stored as doubles in MongoDB', function() {
     const schema = new mongoose.Schema({ val: Double });
